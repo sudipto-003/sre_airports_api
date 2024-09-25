@@ -31,3 +31,9 @@ _For tasks, checkout [tasks.md](tasks.md)_
 
 *Not implemented. I am not well familier with API gateway yet, no previous hands on experience regarding API gateways*
 
+**Bonus Tasks** *(Not Implemented)*
+1. As the application is multiversioned, my approach for CI/CD piepline is using different branch for different versions, I proposing a high level workflow with considering Github Action as the CI/CD.
+- say *release_v1* branch tracks the v1 version, and *release_v2* branch tracks v2 version of the app
+- a central repo/branch contains the action for build and deploy jobs, these workflows are configured to trigger on *workflow_dispatch* events and takes inputs to better control versioning requirments.
+- workflows configured on release-* brnches trigger on push/PR close events, invokes the module workflows with their respective values.
+- storing the secrets(docker repo creds, deploy creds) in Github repo/environment level secrets for security purpose. Using Environments for manual approval if it is required before deployiung.
