@@ -94,16 +94,16 @@ func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 
 	// Initialize GCS client
 	// loading the shared configs from ~/.aws/config
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	bucket_name := os.Getenv("BUCKET_TO_UPLOAD")
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 	s3_client := s3.NewFromConfig(cfg) 
 
 	// Upload image to GCS and update the airport's image URL
-	bucket_name := os.Getenv("BUCKET_TO_UPLOAD")
-	ctx := context.TODO()
-	res, err := s3_client.PutObject(ctx, &s3.PutObjectInput{
+	_, err := s3_client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucket_name),
 		Key: aws.String(img_key),
 		Body: img,
@@ -114,6 +114,7 @@ func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 	}
 	Updated_airport.Airport.ImageURL = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", bucket_name, img_key)
 	airports_v2[airport_idx] = Updated_airport
+	airports[airport_idx] = Updated_airport.Airport
 
 	// Respond with success/failure
 	json.NewEncoder(w).Encode(Updated_airport)
@@ -127,7 +128,7 @@ func main() {
 	http.HandleFunc("/airports_v2", AirportsV2)
 
 	// TODO: complete the UpdateAirportImage handler function
-	http.HandleFunc("/update_airport_image", UpdateAirportImage)
+	http.HandleFunc("/update_airport_image_v2", UpdateAirportImage)
 
 	// Start the server
 	http.ListenAndServe(":8080", nil)
