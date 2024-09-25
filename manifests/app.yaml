@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app-v1
+  namespace: demo
+  labels:
+    version: web-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      version: web-v1
+  template:
+    metadata:
+      labels:
+        version: web-v1
+    spec:
+      containers:
+      - name: web-api
+        image: custom-registry.io/web-api:v1
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: BUCKET_TO_UPLOAD
+          valueFrom:
+            configMapKeyRef:
+              name: web-cm
+              key: upload-bucket
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets-id
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secrets-key
+              key: aws-secret-access-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-api-service-v1
+  metadata: demo
+spec:
+  selector:
+    version: web-v1
+  ports:
+  - name: web-api-port
+    protocol: TCP
+    port: 80
+    targetPort: http
+            

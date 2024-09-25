@@ -93,7 +93,7 @@ func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 	var Updated_airport AirportV2
 
 	// Initialize GCS client
-	// loading the shared configs from ~/.aws/config
+	// Assuming AWS client
 	bucket_name := os.Getenv("BUCKET_TO_UPLOAD")
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx)

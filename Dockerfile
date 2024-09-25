@@ -14,5 +14,6 @@ WORKDIR /app
 
 COPY --from=builder /go/src/web-main .
 
+USER 1001
 EXPOSE 8080
 ENTRYPOINT ["./web-main"]
