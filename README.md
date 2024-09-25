@@ -26,3 +26,8 @@ _For tasks, checkout [tasks.md](tasks.md)_
 - So here is a dependency for the application deployment prcoess, before the application deployments are applied, configmap and secrets sources have to be existed. So applying the *cmandsecret.yaml* before other manifests. I want to mention, this dependencies and application deployment would be better configured with Helm packaging.
 - I have created two manifests for two different versions of the app. I have used a label `version` to configure the deployment and service resource here.
 
+5. Assuming API gateway *Kuma*, implement httpRoute resources that will use the k8s core service resources. Here is a diagram that shows the higher level dataflow for my advocated solution, here using weight to distribute the load between the services.
+<img src="images/sre-gozayan.jpg" alt="api gateway diagram">
+
+*Not implemented. I am not well familier with API gateway yet, no previous hands on experience regarding API gateways*
+
