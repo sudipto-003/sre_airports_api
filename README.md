@@ -12,3 +12,17 @@ _For tasks, checkout [tasks.md](tasks.md)_
     identity: string
 }
 ```
+2. endpoint /update_airport_image: I have added the endpoint with following workflow:
+- first parsing the *MutipartForm* data with Post method to this endpoint. Parsed the image with key *img* and airport name with key *name*, if any field is not available then returning a 400, Bad Request response. 
+- Assumed the endpoint in V2 api, so searched for the name in airportsV2 list, if not found returning 404 response.
+- Then, opened a s3 client to upload the image. *I have used AWS s3 for my knowledge compatablity and shortage of time.* Using the bucket name from env var to make the app portable. I have also used the uploaded image metadata filename as the object key to upload the image in the bucket. Tried to upload the image using GO AWS SDK and if get errored then returning a 500, Internal Server Error response.
+- If image upload if succeeded then updated the values in both *airports* and *airportsV2* list and returned the updated airports object.
+- I have also assumed this workflow in v2 API so used the v2 scheme and datastore, just updated the legacy datastore to reflect the changes.
+
+3. Containerize the app: I have used multistaged docker build to optimize the image to serve. Using golang-alpine image for build, copied the go.mod file first and installing the dependencies, reduing image layers when source code changes but no dependencies are updated. In the final image, copied the compiled binary, used a non priviledged user to run the app and exposing the port 8080 only from the container.
+
+4. Kubernetes manifest:
+- I have organised the manifests under the directory *manifests*. The application is dependent on env variables, for *upload_bucket_name*, *AWS access credentials*. So I created a config map for app configurations like bucket name here, and created Secret resource for sensitive AWS access credentials and mounted them as env variables in the container.
+- So here is a dependency for the application deployment prcoess, before the application deployments are applied, configmap and secrets sources have to be existed. So applying the *cmandsecret.yaml* before other manifests. I want to mention, this dependencies and application deployment would be better configured with Helm packaging.
+- I have created two manifests for two different versions of the app. I have used a label `version` to configure the deployment and service resource here.
+

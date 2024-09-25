@@ -93,7 +93,7 @@ func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 	var Updated_airport AirportV2
 
 	// Initialize GCS client
-	// Assuming AWS client
+	// Assuming AWS for compatability and shortage og time.
 	bucket_name := os.Getenv("BUCKET_TO_UPLOAD")
 	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx)
