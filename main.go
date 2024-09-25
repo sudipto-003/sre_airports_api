@@ -3,6 +3,13 @@ package main
 import (
 	"encoding/json"	
 	"net/http"
+
+	"os"
+	"context"
+	"log"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type Airport struct {
@@ -56,14 +63,61 @@ func AirportsV2(w http.ResponseWriter, r *http.Request) {
 // UpdateAirportImage handler for updating airport images
 func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body to get the airport name and image data
+	r.ParseMultipartForm(1 << 20)
+	img, metadata, err := r.FromFile("img")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer img.close()
+	img_key := metadata.Filename
+	airport_name := r.FromValue("name")
+	if airport_name == "" {
+		http.Error(w, "No Airport Name provided", http.StatusBadRequest)
+		return
+	}
 
 	// Find the airport by name
+	var Updated_airport AirportV2
+	airport_idx := 0
+	for ; airport_idx < length(airportsV2) ; airport_idx++ {
+		if airportsV2[airport_idx].Airport.Name == airport_name {
+			Updated_airport = airportsV2[airport_idx]
+			break
+		}
+	}
+	if airport_idx >= length(airportsV2) {
+		http.Error(w, "No Airport found with the name", http.StatusNotFound)
+		return
+	}
+	var Updated_airport AirportV2
 
 	// Initialize GCS client
+	// loading the shared configs from ~/.aws/config
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatal(err)
+	}
+	s3_client := s3.NewFromConfig(cfg) 
 
 	// Upload image to GCS and update the airport's image URL
+	bucket_name := os.Getenv("BUCKET_TO_UPLOAD")
+	ctx := context.TODO()
+	res, err := s3_client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(bucket_name),
+		Key: aws.String(img_key),
+		Body: img,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	Updated_airport.Airport.ImageURL = fmt.Sprintf("https://%s.s3.amazonaws.com/%s", bucket_name, img_key)
+	airports_v2[airport_idx] = Updated_airport
 
 	// Respond with success/failure
+	json.NewEncoder(w).Encode(Updated_airport)
+	return
 }
 
 func main() {
