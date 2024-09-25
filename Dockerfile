@@ -12,7 +12,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build cgo -o web-main
 FROM alpine:3.20
 WORKDIR /app
 
-COPY --from=builder /go/src/web-main ./
+COPY --from=builder /go/src/web-main .
 
 EXPOSE 8080
 ENTRYPOINT ["./web-main"]
