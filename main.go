@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"	
 	"net/http"
-
+	"fmt"
 	"os"
 	"context"
 	"log"
@@ -90,7 +90,6 @@ func UpdateAirportImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No Airport found with the name", http.StatusNotFound)
 		return
 	}
-	var Updated_airport AirportV2
 
 	// Initialize GCS client
 	// Assuming AWS for compatability and shortage og time.
